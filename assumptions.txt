@@ -1,0 +1,2 @@
+- One face on picture
+- Read faces from folder
