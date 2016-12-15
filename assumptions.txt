@@ -1,6 +1,9 @@
 - One face on picture
 - Read faces from folder
 
+
+LINK TO SEE FACE: https://cdn-images-1.medium.com/max/800/1*AbEg31EgkbXSQehuNJBlWg.png
+
 if ( landmark(30).x - landmark(2).x > 50 ) ---> head turned to the LEFT
 if ( landmark(30).x - landmark(14).x < -50 ) ---> head turned to the RIGHT
 if ( landmark(30).y - landmark(14).y < -10 ) ---> head turned to the UP
