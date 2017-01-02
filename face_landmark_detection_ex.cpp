@@ -5,8 +5,6 @@
     estimate their pose.  The pose takes the form of 68 landmarks.  These are
     points on the face such as the corners of the mouth, along the eyebrows, on
     the eyes, and so forth.  
-    
-
 
     This face detector is made using the classic Histogram of Oriented
     Gradients (HOG) feature combined with a linear classifier, an image pyramid,
@@ -18,9 +16,6 @@
 
     Also, note that you can train your own models using dlib's machine learning
     tools.  See train_shape_predictor_ex.cpp to see an example.
-
-    
-
 
     Finally, note that the face detector is fastest when compiled with at least
     SSE2 instructions enabled.  So if you are using a PC with an Intel or AMD
@@ -44,11 +39,27 @@
 #include <dlib/gui_widgets.h>
 #include <dlib/image_io.h>
 #include <iostream>
+#include <stdlib.h>
+#include <fstream>
 
 using namespace dlib;
 using namespace std;
 
 // ----------------------------------------------------------------------------------------
+
+const string SHAPE_PREDICTOR = "shape_predictor_68_face_landmarks.dat";
+//Return vector with names of all jpgs in directory 
+std::vector<std::string> getAllJpgFromDir() {
+	std::system("dir /B *.jpg > fileS.txt");
+	std::vector<std::string> result;
+	std::ifstream infile("fileS.txt");
+	std::string line;
+
+	while (std::getline(infile, line)) {
+		result.push_back(line);
+	}
+	return result;
+}
 
 int main(int argc, char** argv)
 {  
@@ -58,15 +69,6 @@ int main(int argc, char** argv)
         // process.  We will take these filenames in as command line arguments.
         // Dlib comes with example images in the examples/faces folder so give
         // those as arguments to this program.
-        if (argc == 1)
-        {
-            cout << "Call this program like this:" << endl;
-            cout << "./face_landmark_detection_ex shape_predictor_68_face_landmarks.dat faces/*.jpg" << endl;
-            cout << "\nYou can get the shape_predictor_68_face_landmarks.dat file from:\n";
-            cout << "http://dlib.net/files/shape_predictor_68_face_landmarks.dat.bz2" << endl;
-            return 0;
-        }
-
         // We need a face detector.  We will use this to get bounding boxes for
         // each face in an image.
         frontal_face_detector detector = get_frontal_face_detector();
@@ -75,16 +77,17 @@ int main(int argc, char** argv)
         // loading the model from the shape_predictor_68_face_landmarks.dat file you gave
         // as a command line argument.
         shape_predictor sp;
-        deserialize(argv[1]) >> sp;
-
-
-        image_window win, win_faces;
+        deserialize(SHAPE_PREDICTOR) >> sp;
+		
+		std::vector<std::string> listOfPhoto = getAllJpgFromDir();
+		
+		image_window win, win_faces;
         // Loop over all the images provided on the command line.
-        for (int i = 2; i < argc; ++i)
+		for (int i = 0; i < listOfPhoto.size(); i++)
         {
-            cout << "processing image " << argv[i] << endl;
+            cout << "processing image " << listOfPhoto.at(i) << endl;
             array2d<rgb_pixel> img;
-            load_image(img, argv[i]);
+            load_image(img, listOfPhoto.at(i));
             // Make the image larger so we can detect small faces.
             pyramid_up(img);
 
@@ -99,10 +102,15 @@ int main(int argc, char** argv)
             for (unsigned long j = 0; j < dets.size(); ++j)
             {
                 full_object_detection shape = sp(img, dets[j]);
-                cout << "number of parts: "<< shape.num_parts() << endl;
-                cout << "pixel position of first part:  " << shape.part(0) << endl;
-                cout << "pixel position of second part: " << shape.part(1) << endl;
-                // You get the idea, you can get all the face part locations if
+
+				if (shape.part(30).x() - shape.part(2).x() > 50) cout << "LEFT" << endl;
+				if (shape.part(30).x() - shape.part(2).x() < 50) cout << "RIGHT" << endl;
+				if (shape.part(30).y() - shape.part(14).y() > -10) cout << "UP" << endl;
+				if (shape.part(30).x() - shape.part(14).x() > 10) cout << "DOWN" << endl;
+				if (shape.part(30).y() - shape.part(14).y() > 10) cout << "OPENED MOUTH" << endl;
+				if (shape.part(44).y() - shape.part(24).y() > 32 && shape.part(37).y() - shape.part(19).y() > 32) cout << "RAISED EYEBROWS" << endl;
+
+				// You get the idea, you can get all the face part locations if
                 // you want them.  Here we just store them in shapes so we can
                 // put them on the screen.
                 shapes.push_back(shape);
@@ -120,7 +128,7 @@ int main(int argc, char** argv)
             win_faces.set_image(tile_images(face_chips));
 
             cout << "Hit enter to process the next image..." << endl;
-            cin.get();
+            std::cin.get();
         }
     }
     catch (exception& e)
@@ -131,4 +139,3 @@ int main(int argc, char** argv)
 }
 
 // ----------------------------------------------------------------------------------------
-
