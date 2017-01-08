@@ -37,6 +37,22 @@
 using namespace dlib;
 using namespace std;
 
+// ---- Write video to file - set flag on true/false
+const boolean WRITE_TO_VIDEO = true;
+//Configuration of wrting video
+cv::VideoWriter writer;
+const string FILENAME = "./output.avi";
+const int CODEC = CV_FOURCC('D', 'I', 'V', 'X');
+const double FPS = 10.0;
+
+void writeVideoToFile() {
+	writer.open(FILENAME, CODEC, FPS, cv::Size(640,480));
+	if (!writer.isOpened()) {
+		cerr << "Could not open the output video file for write\n";
+		return;
+	}
+}
+
 int main()
 {
     try
@@ -49,11 +65,18 @@ int main()
         }
 
         image_window win;
+		
+		if (WRITE_TO_VIDEO) {
+			writeVideoToFile();
+		}
 
         // Load face detection and pose estimation models.
         frontal_face_detector detector = get_frontal_face_detector();
         shape_predictor pose_model;
         deserialize("shape_predictor_68_face_landmarks.dat") >> pose_model;
+
+		//Write data to file
+		ofstream file("dane.txt");
 
         // Grab and process frames until the main window is closed by the user.
         while(!win.is_closed())
@@ -68,19 +91,30 @@ int main()
             // contain dangling pointers.  This basically means you shouldn't modify temp
             // while using cimg.
             cv_image<bgr_pixel> cimg(temp);
-
+	
             // Detect faces 
             std::vector<rectangle> faces = detector(cimg);
             // Find the pose of each face.
             std::vector<full_object_detection> shapes;
-            for (unsigned long i = 0; i < faces.size(); ++i)
-                shapes.push_back(pose_model(cimg, faces[i]));
+			for (unsigned long i = 0; i < faces.size(); ++i) {
+				shapes.push_back(pose_model(cimg, faces[i]));
+				const full_object_detection& d = shapes[i];
+				//for (int j = 0; j < 68; j++) {
+				//	file << j << " " << d.part(j).x() << " " << d.part(j).y() << endl;
+				//}
+				file << "30 " << d.part(30).x() << " " << d.part(30).y() << endl;
+				file << "2 " << d.part(2).x() << " " << d.part(2).y() << endl;
+			}
+
+			//Write frame to file 
+			writer.write(temp);
 
             // Display it all on the screen
             win.clear_overlay();
             win.set_image(cimg);
             win.add_overlay(render_face_detections(shapes));
         }
+		file.close();
     }
     catch(serialization_error& e)
     {
