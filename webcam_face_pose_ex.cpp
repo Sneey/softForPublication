@@ -78,9 +78,11 @@ int main()
 		//Write data to file
 		ofstream file("dane.txt");
 
+		int counter = 0;
         // Grab and process frames until the main window is closed by the user.
         while(!win.is_closed())
         {
+			counter++;
             // Grab a frame
             cv::Mat temp;
             cap >> temp;
@@ -99,11 +101,10 @@ int main()
 			for (unsigned long i = 0; i < faces.size(); ++i) {
 				shapes.push_back(pose_model(cimg, faces[i]));
 				const full_object_detection& d = shapes[i];
-				//for (int j = 0; j < 68; j++) {
-				//	file << j << " " << d.part(j).x() << " " << d.part(j).y() << endl;
-				//}
-				file << "30 " << d.part(30).x() << " " << d.part(30).y() << endl;
-				file << "2 " << d.part(2).x() << " " << d.part(2).y() << endl;
+				for (int j = 0; j < 68; j++) {
+					file << counter << " " << j << " " << d.part(j).x() << " " << d.part(j).y() << endl;
+				}
+				
 			}
 
 			//Write frame to file 
