@@ -53,6 +53,10 @@ void writeVideoToFile() {
 	}
 }
 
+int countSurfaceAreaOfBoundingBox(rectangle rect) {
+	return (rect.bottom() - rect.top())*(rect.right() - rect.left());
+}
+
 int main()
 {
     try
@@ -96,11 +100,18 @@ int main()
 	
             // Detect faces 
             std::vector<rectangle> faces = detector(cimg);
+			//cout << "right: " << faces[0].right << endl;
+	//		cout << "bottom: " << faces[0].bottom << endl;
+		//	cout << "left: " << faces[0].left << endl;
+
             // Find the pose of each face.
             std::vector<full_object_detection> shapes;
 			for (unsigned long i = 0; i < faces.size(); ++i) {
 				shapes.push_back(pose_model(cimg, faces[i]));
 				const full_object_detection& d = shapes[i];
+				
+				cout << "Pole bounding boxa: " << countSurfaceAreaOfBoundingBox(faces.at(i)) << endl;
+				//cout << "top: " << faces.at(i).top() << endl;			
 				for (int j = 0; j < 68; j++) {
 					file << counter << " " << j << " " << d.part(j).x() << " " << d.part(j).y() << endl;
 				}
