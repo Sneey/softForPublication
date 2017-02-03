@@ -81,7 +81,7 @@ int main()
 
 		//Write data to file
 		ofstream file("dane.txt");
-
+		ofstream file2("surfaceArea.txt");
 		int counter = 0;
         // Grab and process frames until the main window is closed by the user.
         while(!win.is_closed())
@@ -109,9 +109,11 @@ int main()
 			for (unsigned long i = 0; i < faces.size(); ++i) {
 				shapes.push_back(pose_model(cimg, faces[i]));
 				const full_object_detection& d = shapes[i];
-				
-				cout << "Pole bounding boxa: " << countSurfaceAreaOfBoundingBox(faces.at(i)) << endl;
-				//cout << "top: " << faces.at(i).top() << endl;			
+
+				file2 << counter << " " <<
+					countSurfaceAreaOfBoundingBox(faces.at(i)) << " " <<
+					d.part(14).x() - d.part(30).x() << endl;
+				//cout << "Pole bounding boxa: " << countSurfaceAreaOfBoundingBox(faces.at(i)) << endl;
 				for (int j = 0; j < 68; j++) {
 					file << counter << " " << j << " " << d.part(j).x() << " " << d.part(j).y() << endl;
 				}
@@ -127,6 +129,7 @@ int main()
             win.add_overlay(render_face_detections(shapes));
         }
 		file.close();
+		file2.close();
     }
     catch(serialization_error& e)
     {
@@ -140,4 +143,3 @@ int main()
         cout << e.what() << endl;
     }
 }
-
